@@ -58,8 +58,10 @@ class Tooltip extends Component {
     childContentSpacing: 4,
     children: null,
     closeOnChildInteraction: true,
+    closeOnContentInteraction: true,
     content: <View />,
     displayInsets: {},
+    disableShadow: false,
     isVisible: false,
     onClose: () => {
       console.warn(
@@ -72,6 +74,7 @@ class Tooltip extends Component {
     useInteractionManager: false,
     useReactNativeModal: true,
     topAdjustment: 0,
+    accessible: true,
   };
 
   static propTypes = {
@@ -84,6 +87,7 @@ class Tooltip extends Component {
     childContentSpacing: PropTypes.number,
     children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
     closeOnChildInteraction: PropTypes.bool,
+    closeOnContentInteraction: PropTypes.bool,
     content: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
     displayInsets: PropTypes.shape({
       top: PropTypes.number,
@@ -91,6 +95,7 @@ class Tooltip extends Component {
       left: PropTypes.number,
       right: PropTypes.number,
     }),
+    disableShadow: PropTypes.bool,
     isVisible: PropTypes.bool,
     onClose: PropTypes.func,
     placement: PropTypes.oneOf(['top', 'left', 'bottom', 'right', 'center']),
@@ -99,6 +104,7 @@ class Tooltip extends Component {
     useInteractionManager: PropTypes.bool,
     useReactNativeModal: PropTypes.bool,
     topAdjustment: PropTypes.number,
+    accessible: PropTypes.bool,
   };
 
   constructor(props) {
@@ -107,6 +113,7 @@ class Tooltip extends Component {
     const { isVisible, useInteractionManager } = props;
 
     this.isMeasuringChild = false;
+    this.interactionPromise = null;
 
     this.childWrapper = React.createRef();
     this.state = {
@@ -151,6 +158,9 @@ class Tooltip extends Component {
 
   componentWillUnmount() {
     Dimensions.removeEventListener('change', this.updateWindowDims);
+    if (this.interactionPromise) {
+     this.interactionPromise.cancel();
+    }
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -264,7 +274,10 @@ class Tooltip extends Component {
     };
 
     if (this.props.useInteractionManager) {
-      InteractionManager.runAfterInteractions(() => {
+      if (this.interactionPromise) {
+        this.interactionPromise.cancel();
+      }
+      this.interactionPromise = InteractionManager.runAfterInteractions(() => {
         doMeasurement();
       });
     } else {
@@ -375,8 +388,17 @@ class Tooltip extends Component {
 
     const hasChildren = React.Children.count(this.props.children) > 0;
 
+    const onPressContent = () => {
+      if (this.props.closeOnContentInteraction) {
+        this.props.onClose();
+      }
+    };
+
     return (
-      <TouchableWithoutFeedback onPress={this.props.onClose}>
+      <TouchableWithoutFeedback
+        onPress={this.props.onClose}
+        accessible={this.props.accessible}
+      >
         <View style={generatedStyles.containerStyle}>
           <View style={[generatedStyles.backgroundStyle]}>
             <View style={generatedStyles.tooltipStyle}>
@@ -385,7 +407,12 @@ class Tooltip extends Component {
                 onLayout={this.measureContent}
                 style={generatedStyles.contentStyle}
               >
-                {this.props.content}
+                <TouchableWithoutFeedback
+                  onPress={onPressContent}
+                  accessible={this.props.accessible}
+                >
+                  {this.props.content}
+                </TouchableWithoutFeedback>
               </View>
             </View>
           </View>

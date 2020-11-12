@@ -56,11 +56,18 @@ declare module 'react-native-walkthrough-tooltip' {
     // When true (default), onClose prop is called when user touches child element
     closeOnChildInteraction?: boolean;
 
+    // When true (default), onClose prop is called when user touches content element
+    closeOnContentInteraction?: boolean;
+
     // This is the view displayed in the tooltip popover bubble
     content?: React.ReactElement;
 
     // The number of pixels to inset the tooltip on the screen
     displayInsets?: TooltipDisplayInsets;
+
+    // When true, tooltip shadow aren't displayed
+    // Fix: https://github.com/jasongaare/react-native-walkthrough-tooltip/issues/81
+    disableShadow?: boolean;
 
     // When true, tooltip is displayed
     isVisible?: boolean;
@@ -95,9 +102,9 @@ declare module 'react-native-walkthrough-tooltip' {
      */
     useReactNativeModal?: boolean;
 
-    /** 
+    /**
      *The distance between the tooltip-rendered child and the arrow pointing to it
-    */
+     */
     childContentSpacing?: number;
 
     /**
@@ -108,6 +115,11 @@ declare module 'react-native-walkthrough-tooltip' {
      ```
     */
     topAdjustment?: number;
+
+    /**
+     *Set this to false if you want to override the default accessible on the root TouchableWithoutFeedback
+     */
+    accessible?: boolean;
   }
 
   /**
