@@ -433,6 +433,9 @@ class Tooltip extends Component {
 
     return (
       <React.Fragment>
+
+        {this.props.tutorialTooltip}
+        
         {useReactNativeModal ? (
           <Modal
             transparent
